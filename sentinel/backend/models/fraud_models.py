@@ -1,44 +1,58 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
 from enum import Enum
 
-class NodeType(str, Enum):
-    PHONE = "phone"
-    ACCOUNT = "account"
-    DEVICE = "device"
-    VICTIM = "victim"
+class RiskLevel(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
-class FraudNode(BaseModel):
+class EntityType(str, Enum):
+    PHONE = "PHONE"
+    ACCOUNT = "ACCOUNT"
+    DEVICE = "DEVICE"
+    VICTIM = "VICTIM"
+    LOCATION = "LOCATION"
+
+class Entity(BaseModel):
     id: str
-    type: NodeType
-    label: str
-    metadata: Optional[Dict] = {}
+    type: EntityType
+    value: str
+    metadata: Dict[str, Any] = {}
 
-class FraudEdge(BaseModel):
-    source: str
-    target: str
-    relationship: str
-    weight: Optional[float] = 1.0
-
-class FraudNetworkRequest(BaseModel):
-    phone_numbers: Optional[List[str]] = []
-    account_ids: Optional[List[str]] = []
-    device_ids: Optional[List[str]] = []
-    victim_reports: Optional[List[str]] = []
+class Relationship(BaseModel):
+    from_id: str
+    to_id: str
+    rel_type: str
+    weight: float = 1.0
 
 class FraudCluster(BaseModel):
-    cluster_id: str
-    ring_name: str
-    node_count: int
+    cluster_id: int
+    nodes: List[str]
+    size: int
+    hub_node: Optional[str]
     victim_count: int
-    estimated_damage: Optional[str]
-    threat_level: str
+    risk_score: float
 
-class FraudNetworkResponse(BaseModel):
-    nodes: List[FraudNode]
-    edges: List[FraudEdge]
+class FraudAnalysisRequest(BaseModel):
+    phones: List[str] = []
+    accounts: List[str] = []
+    devices: List[str] = []
+    victim_statement: str = ""
+    session_id: Optional[str] = None
+
+class FraudAnalysisResponse(BaseModel):
+    session_id: str
+    status: str
+    entities: List[Entity]
+    relationships: List[Relationship]
     clusters: List[FraudCluster]
-    intelligence_summary: str
-    recommended_actions: List[str]
-    analysis_id: str
-    graph_stored: bool
+    risk_level: RiskLevel
+    risk_score: float
+    llm_summary: str
+    graph_html: str
+    pdf_available: bool
+    neo4j_connected: bool
+    related_threats: List[Dict]
+    processing_time_ms: int
