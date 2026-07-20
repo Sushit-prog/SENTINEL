@@ -2,6 +2,8 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api import scamwatch, currencyguard, fraudgraph
+from backend.api.intelligence import router as intelligence_router
+from backend.api.geo import router as geo_router
 from backend.config import get_settings
 
 settings = get_settings()
@@ -26,6 +28,8 @@ app.add_middleware(
 app.include_router(scamwatch.router, prefix="/api/scamwatch", tags=["SCAMWatch"])
 app.include_router(currencyguard.router, prefix="/api/currencyguard", tags=["CURRENCYGuard"])
 app.include_router(fraudgraph.router, prefix="/api/fraudgraph", tags=["FRAUDGraph"])
+app.include_router(intelligence_router)
+app.include_router(geo_router)
 
 @app.get("/")
 def root():

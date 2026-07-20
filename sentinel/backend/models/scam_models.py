@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from enum import Enum
+from datetime import datetime
 
 class RiskLevel(str, Enum):
     LOW = "LOW"
@@ -27,3 +28,38 @@ class ScamAnalysisResponse(BaseModel):
     recommended_action: str
     similar_patterns_found: int
     analysis_id: str
+    translated_verdict: Optional[str] = None
+    translated_actions: Optional[List[str]] = None
+    target_language: Optional[str] = "en"
+
+
+# ── CITIZEN ALERT MODEL ──────────────────────────────────────────────────────
+
+class EmergencyContact(BaseModel):
+    name: str
+    number: str
+    description: str
+    url: Optional[str] = None
+
+class MHAAlertPayload(BaseModel):
+    complainant_channel: str
+    scam_type: str
+    urgency: str
+    detected_at: str
+    indicators: List[Dict[str, Any]]
+    recommended_freeze_window_minutes: int
+
+class CitizenAlert(BaseModel):
+    alert_id: str
+    analysis_id: str
+    scam_type: str
+    risk_level: str
+    risk_score: float
+    one_line_verdict: str
+    recommended_actions: List[str]
+    emergency_contacts: List[EmergencyContact]
+    mha_alert_payload: MHAAlertPayload
+    generated_at: str
+    translated_verdict: Optional[str] = None
+    translated_actions: Optional[List[str]] = None
+    target_language: Optional[str] = "en"

@@ -193,7 +193,7 @@ def build_scam_agent():
 scam_agent = build_scam_agent()
 
 
-def run_scam_analysis(text: str, channel: str = "unknown") -> ScamAnalysisResponse:
+def run_scam_analysis(text: str, channel: str = "unknown", language: str = "en") -> ScamAnalysisResponse:
     """Main entry point for SCAMWatch analysis."""
     initial_state: ScamAnalysisState = {
         "text": text,
@@ -229,7 +229,7 @@ def run_scam_analysis(text: str, channel: str = "unknown") -> ScamAnalysisRespon
         for ind in final_state["llm_indicators"]
     ]
 
-    return ScamAnalysisResponse(
+    response = ScamAnalysisResponse(
         risk_level=RiskLevel(final_state["risk_result"]["risk_level"]),
         risk_score=final_state["risk_result"]["risk_score"],
         scam_type=scam_type if scam_type != "LEGITIMATE" else None,
@@ -239,3 +239,21 @@ def run_scam_analysis(text: str, channel: str = "unknown") -> ScamAnalysisRespon
         similar_patterns_found=final_state["similar_patterns"],
         analysis_id=final_state["analysis_id"],
     )
+
+    # Translate if non-English language requested
+    if language and language != "en":
+        try:
+            from backend.core.translation import translate_verdict
+            translated = translate_verdict(
+                one_line_verdict=verdict,
+                recommended_actions=[recommended_action],
+                target_language=language,
+            )
+            response.translated_verdict = translated["translated_verdict"]
+            response.translated_actions = translated["translated_actions"]
+            response.target_language = language
+        except Exception as e:
+            logger.warning(f"Translation failed, falling back to English: {e}")
+            response.target_language = "en"
+
+    return response

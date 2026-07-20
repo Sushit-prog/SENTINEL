@@ -303,9 +303,9 @@ if analyze_clicked:
                 """, unsafe_allow_html=True)
 
     with tab4:
-        st.markdown("#### 📄 Intelligence Package PDF")
+        st.markdown("#### 📄 Download Intelligence Package")
         st.markdown("""
-        The intelligence package includes:
+        **PDF Report** includes:
         - Classified header with session metadata
         - Full entity inventory
         - Fraud ring analysis table
@@ -313,24 +313,46 @@ if analyze_clicked:
         - Legal disclaimer (IT Act 2000 / DPDP Act 2023)
         """)
         if data.get("pdf_available") and session_id:
-            pdf_url = f"{API_BASE}/api/fraudgraph/report/{session_id}"
-            try:
-                pdf_resp = requests.get(pdf_url, timeout=10)
-                if pdf_resp.status_code == 200:
-                    st.download_button(
-                        label="📥 Download Intelligence Package (PDF)",
-                        data=pdf_resp.content,
-                        file_name=f"SENTINEL_FRAUD_{session_id[:8].upper()}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                    st.success("✅ PDF intelligence package ready")
-                else:
-                    st.error("PDF not found on server.")
-            except Exception as e:
-                st.error(f"PDF download error: {e}")
+            col_pdf, col_kit = st.columns(2)
+
+            with col_pdf:
+                pdf_url = f"{API_BASE}/api/fraudgraph/report/{session_id}"
+                try:
+                    pdf_resp = requests.get(pdf_url, timeout=10)
+                    if pdf_resp.status_code == 200:
+                        st.download_button(
+                            label="📥 Download PDF Report",
+                            data=pdf_resp.content,
+                            file_name=f"SENTINEL_FRAUD_{session_id[:8].upper()}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    else:
+                        st.error("PDF not found on server.")
+                except Exception as e:
+                    st.error(f"PDF download error: {e}")
+
+            with col_kit:
+                kit_url = f"{API_BASE}/api/fraudgraph/evidence-kit/{session_id}"
+                try:
+                    kit_resp = requests.get(kit_url, timeout=15)
+                    if kit_resp.status_code == 200:
+                        st.download_button(
+                            label="📦 Download Evidence Kit (ZIP)",
+                            data=kit_resp.content,
+                            file_name=f"SENTINEL_EVIDENCE_{session_id[:8].upper()}.zip",
+                            mime="application/zip",
+                            use_container_width=True
+                        )
+                        st.caption("ZIP contains: PDF + Graph HTML + Entity CSV + Analysis JSON + Manifest")
+                    else:
+                        st.warning("Evidence kit not available.")
+                except Exception as e:
+                    st.warning(f"Evidence kit error: {e}")
+
+            st.success("✅ Intelligence packages ready")
         else:
-            st.warning("PDF not generated. Run analysis first.")
+            st.warning("No analysis data available. Run analysis first.")
 
     # ── PROCESSING METADATA ───────────────────────────────────────────────────
     proc_time = data.get("processing_time_ms", 0)

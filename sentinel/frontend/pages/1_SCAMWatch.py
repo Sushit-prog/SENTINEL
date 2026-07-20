@@ -42,14 +42,26 @@ has made 500 members rich already. Guaranteed returns. Join today, limited time 
 }
 
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.header("Settings")
     channel = st.selectbox(
         "Input Channel",
         ["unknown", "whatsapp", "sms", "call", "email", "social_media"],
         help="Where did you receive this message?"
     )
+    language = st.selectbox(
+        "Output Language",
+        ["en", "hi", "ta", "bn", "te"],
+        format_func=lambda x: {
+            "en": "English",
+            "hi": "Hindi",
+            "ta": "Tamil",
+            "bn": "Bengali",
+            "te": "Telugu",
+        }.get(x, x),
+        help="Language for verdict and advisory text"
+    )
     st.divider()
-    st.header("📋 Sample Scams")
+    st.header("Sample Scams")
     st.caption("Click to load a sample")
     for name in SAMPLE_TEXTS:
         if st.button(name, use_container_width=True):
@@ -90,7 +102,7 @@ with col2:
                     json={
                         "text": text_input,
                         "channel": channel,
-                        "language": "en"
+                        "language": language
                     },
                     timeout=60.0
                 )
@@ -113,6 +125,18 @@ with col2:
                     st.markdown(f"**Verdict:** {data['verdict']}")
                     st.markdown(f"**Recommended Action:** {data['recommended_action']}")
 
+                    # Show translated verdict if available
+                    if data.get("translated_verdict") and data.get("target_language") != "en":
+                        lang_names = {"hi": "Hindi", "ta": "Tamil", "bn": "Bengali", "te": "Telugu"}
+                        lang_name = lang_names.get(data["target_language"], data["target_language"])
+                        st.markdown(f"---")
+                        st.markdown(f"**Translated Verdict ({lang_name}):**")
+                        st.info(data["translated_verdict"])
+                        if data.get("translated_actions"):
+                            st.markdown(f"**Translated Actions ({lang_name}):**")
+                            for action in data["translated_actions"]:
+                                st.markdown(f"- {action}")
+
                     if data.get("similar_patterns_found", 0) > 0:
                         st.warning(f"⚠️ {data['similar_patterns_found']} similar scam patterns found in intelligence database")
 
@@ -130,6 +154,91 @@ with col2:
                             """, unsafe_allow_html=True)
 
                     st.caption(f"Analysis ID: {data['analysis_id']}")
+
+                    # ── CITIZEN ALERT SECTION ────────────────────────────────
+                    st.markdown("---")
+                    st.subheader("🚨 Citizen Alert")
+
+                    if st.button("📤 Generate Citizen Alert", use_container_width=True, key="gen_alert"):
+                        with st.spinner("Generating citizen alert..."):
+                            try:
+                                alert_resp = httpx.post(
+                                    f"{BACKEND_URL}/api/scamwatch/alert/{data['analysis_id']}",
+                                    timeout=15.0
+                                )
+                                if alert_resp.status_code == 200:
+                                    alert = alert_resp.json()
+                                    st.session_state["citizen_alert"] = alert
+                                    st.session_state["alert_analysis_id"] = data["analysis_id"]
+                                else:
+                                    st.error(f"Alert generation failed: {alert_resp.status_code}")
+                            except Exception as e:
+                                st.error(f"Alert error: {e}")
+
+                    # Render alert if available and for current analysis
+                    alert = st.session_state.get("citizen_alert")
+                    alert_aid = st.session_state.get("alert_analysis_id")
+                    if alert and alert_aid == data["analysis_id"]:
+                        # Verdict banner
+                        alert_rl = alert.get("risk_level", "MEDIUM")
+                        a_emoji, a_color, a_bg = RISK_COLORS.get(alert_rl, ("⚪", "gray", "#f8f9fa"))
+                        # Use translated verdict if available
+                        display_verdict = alert.get("translated_verdict") or alert.get("one_line_verdict", "")
+                        display_actions = alert.get("translated_actions") or alert.get("recommended_actions", [])
+                        a_lang = alert.get("target_language", "en")
+                        lang_label = {"hi": "Hindi", "ta": "Tamil", "bn": "Bengali", "te": "Telugu"}.get(a_lang, "English")
+
+                        st.markdown(f"""
+                        <div style="background:{a_bg}; padding:20px; border-radius:10px; border-left:6px solid {a_color}; margin:12px 0;">
+                            <div style="font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:6px;">
+                                VERDICT {f'({lang_label})' if a_lang != 'en' else ''}
+                            </div>
+                            <div style="font-size:1.3rem; font-weight:bold; color:{a_color};">
+                                {a_emoji} {display_verdict}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # Recommended actions checklist
+                        st.markdown(f"**Recommended Actions ({lang_label}):**")
+                        for action in display_actions:
+                            st.checkbox(action, key=f"action_{hash(action)}", disabled=True)
+
+                        # Emergency contacts
+                        st.markdown("**Emergency Contacts:**")
+                        contacts = alert.get("emergency_contacts", [])
+                        if contacts:
+                            contact_cols = st.columns(min(len(contacts), 3))
+                            for i, contact in enumerate(contacts):
+                                with contact_cols[i % 3]:
+                                    st.markdown(f"""
+                                    <div style="background:#111827; border:1px solid #1f2937; border-radius:8px; padding:12px; margin:4px 0;">
+                                        <div style="font-weight:bold; color:#e5e7eb;">{contact.get('name', '')}</div>
+                                        <div style="color:#00aaff; font-size:1.1rem; font-weight:bold;">{contact.get('number', '')}</div>
+                                        <div style="color:#6b7280; font-size:0.75rem;">{contact.get('description', '')}</div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+
+                        # MHA Alert Payload
+                        with st.expander("📋 MHA Alert Payload (JSON) — Simulated", expanded=False):
+                            st.caption("This is the structured payload that would be transmitted to MHA/NCRB intake systems.")
+                            st.json(alert.get("mha_alert_payload", {}))
+
+                        # Copy as WhatsApp Message
+                        st.markdown("**Share Alert:**")
+                        wa_verdict = display_verdict
+                        wa_actions = display_actions[:2]
+                        whatsapp_text = f"SENTINEL SCAM ALERT\n"
+                        whatsapp_text += f"{'=' * 30}\n"
+                        whatsapp_text += f"{wa_verdict}\n\n"
+                        whatsapp_text += f"Actions:\n"
+                        for i, action in enumerate(wa_actions, 1):
+                            whatsapp_text += f"{i}. {action}\n"
+                        whatsapp_text += f"\nReport: Cyber Crime Helpline 1930 | cybercrime.gov.in"
+                        whatsapp_text += f"\n\n(Sent via SENTINEL - AI for Digital Public Safety)"
+
+                        st.code(whatsapp_text, language=None)
+                        st.caption("Copy the text above and share via WhatsApp to warn others.")
 
                 else:
                     st.error(f"Backend error: {response.status_code} — {response.text}")
