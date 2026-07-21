@@ -1,4 +1,9 @@
-"""SCAMWatch API routes."""
+"""SCAMWatch API — AI-powered scam detection and citizen alert generation.
+
+Analyzes suspicious messages, calls, and texts for Indian scam patterns.
+Returns risk assessments, generates citizen alerts with emergency contacts,
+and supports multi-language translation (Hindi, Tamil, Bengali, Telugu).
+"""
 
 import logging
 from fastapi import APIRouter, HTTPException

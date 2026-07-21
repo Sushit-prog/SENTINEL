@@ -1,3 +1,10 @@
+"""FRAUDGraph API — Graph AI fraud network mapping and evidence packaging.
+
+Analyses phone numbers, bank accounts, device fingerprints, and victim statements
+to map coordinated fraud campaigns. Generates interactive network graphs,
+court-admissible PDF reports, and ZIP evidence kits.
+"""
+
 import os
 import logging
 from datetime import datetime

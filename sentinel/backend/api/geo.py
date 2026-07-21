@@ -1,4 +1,8 @@
-"""GeoIntel API — geospatial intelligence endpoints."""
+"""GeoIntel API — Geospatial fraud intelligence and hotspot mapping.
+
+Visualizes fraud, scam, and counterfeit incidents on an interactive map of India.
+Uses 15 NCRB/RBI/MHA reported hotspot locations with smart geolocation assignment.
+"""
 
 import logging
 from collections import defaultdict

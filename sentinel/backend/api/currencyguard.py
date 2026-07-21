@@ -1,4 +1,9 @@
-"""CURRENCYGuard API routes."""
+"""CURRENCYGuard API — Computer vision currency authentication.
+
+Analyzes uploaded images of Indian currency notes (₹50/100/200/500/2000)
+using OpenCV feature checks and LLM synthesis. Returns authenticity verdicts,
+generates PDF reports, and detects play money / counterfeit notes.
+"""
 
 import logging
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form

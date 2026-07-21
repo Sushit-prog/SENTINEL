@@ -1,3 +1,10 @@
+"""Intelligence Dashboard API — Cross-module analytics and monitoring.
+
+Aggregates data from SCAMWatch, CURRENCYGuard, and FRAUDGraph via shared
+ChromaDB store. Provides live stats, activity feed, cross-module correlations,
+threat timeline, and module health checks.
+"""
+
 import logging
 import re
 from datetime import datetime, timedelta
