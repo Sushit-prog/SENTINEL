@@ -135,6 +135,9 @@ with col1:
 with col2:
     st.subheader("📊 Analysis Result")
 
+    # Retrieve last analysis from session_state (persists across reruns)
+    data = st.session_state.get("last_analysis")
+
     if analyze_clicked and text_input:
         with st.spinner("Running SENTINEL intelligence pipeline..."):
             try:
@@ -150,6 +153,7 @@ with col2:
 
                 if response.status_code == 200:
                     data = response.json()
+                    st.session_state["last_analysis"] = data
                     risk_level = data["risk_level"]
                     emoji, color, bg = RISK_COLORS.get(risk_level, ("⚪", "gray", "#f8f9fa"))
 
