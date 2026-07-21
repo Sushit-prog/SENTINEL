@@ -8,6 +8,19 @@ from backend.core.graph_db import get_graph_db
 
 logger = logging.getLogger(__name__)
 
+# Pronouns and common short words that should NOT be valid victim names
+INVALID_VICTIM_NAMES = {
+    "i", "me", "my", "mine", "myself",
+    "he", "him", "his", "himself",
+    "she", "her", "hers", "herself",
+    "they", "them", "their", "theirs", "themselves",
+    "we", "us", "our", "ours", "ourselves",
+    "you", "your", "yours", "yourself",
+    "it", "its", "itself",
+    "the", "a", "an", "this", "that", "these", "those",
+    "someone", "somebody", "anyone", "anybody", "everyone", "nobody",
+}
+
 ENTITY_EXTRACTION_PROMPT = """You are a fraud intelligence analyst. Extract all entities from this victim statement.
 
 Return ONLY a valid JSON object with this exact structure:
@@ -24,7 +37,7 @@ Entity type rules:
 - PHONE: any phone number mentioned
 - ACCOUNT: bank account numbers, UPI IDs, wallet IDs
 - DEVICE: device IDs, IMEI, MAC addresses, any device identifier
-- VICTIM: victim names or victim identifiers
+- VICTIM: victim names ONLY if explicitly stated (e.g. "my name is Rajesh", "the victim Priya said"). NEVER extract pronouns (I, me, my, he, she, they, him, her) as victim names. If no real name is given, DO NOT include a VICTIM entity at all.
 - LOCATION: cities, states, IP addresses, regions
 
 Relationship type rules:
@@ -106,12 +119,27 @@ class GraphBuilder:
 
             entities = []
             entity_map = {}  # value -> id for relationship building
+            victim_count = 0  # Track generic victims
 
             for e in data.get("entities", []):
                 etype = e.get("type", "PHONE")
                 value = str(e.get("value", "")).strip()
                 if not value:
                     continue
+
+                # Filter out pronouns as victim names
+                if etype == "VICTIM":
+                    value_lower = value.lower().strip()
+                    # Reject pronouns and common short words
+                    if value_lower in INVALID_VICTIM_NAMES or len(value) <= 1:
+                        # Replace with generic victim identifier
+                        victim_count += 1
+                        value = f"VICTIM_{victim_count}"
+                    # Reject if it's just a pronoun phrase like "I" or "me"
+                    elif value_lower.startswith(("i ", "me ", "my ", "he ", "she ", "they ")):
+                        victim_count += 1
+                        value = f"VICTIM_{victim_count}"
+
                 entity_id = f"{etype}_{value.replace(' ', '').replace('+', '')}"
                 entity = Entity(
                     id=entity_id,
