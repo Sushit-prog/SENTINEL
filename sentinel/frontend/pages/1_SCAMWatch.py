@@ -117,6 +117,8 @@ with col2:
     data = st.session_state.get("last_analysis")
 
     if analyze_clicked and text_input:
+        # Prevent double-click by disabling button after first click
+        st.session_state["analyzing"] = True
         with st.spinner("Running SENTINEL intelligence pipeline..."):
             try:
                 response = httpx.post(
@@ -127,12 +129,19 @@ with col2:
                 if response.status_code == 200:
                     data = response.json()
                     st.session_state["last_analysis"] = data
+                    st.session_state["analyzing"] = False
                 else:
                     st.error(f"Backend error: {response.status_code}")
+                    st.session_state["analyzing"] = False
             except httpx.ConnectError:
-                st.error("Cannot connect to SENTINEL backend.")
+                st.error("Cannot connect to SENTINEL backend. Ensure backend is running on port 8000.")
+                st.session_state["analyzing"] = False
+            except httpx.TimeoutException:
+                st.error("Analysis timed out. Please try again with shorter text.")
+                st.session_state["analyzing"] = False
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"Analysis failed: {str(e)}")
+                st.session_state["analyzing"] = False
 
     if data:
         # ── RISK BADGE (prominent) ───────────────────────────────────────────
@@ -214,7 +223,7 @@ with col2:
                 st.markdown(f"[Open cybercrime.gov.in](https://cybercrime.gov.in) {' ' * 3} [Open sancharsaathi.gov.in](https://sancharsaathi.gov.in)")
                 st.caption("Paste the report summary below when filing your complaint.")
 
-            with col2:
+            with col_block:
                 # ── REQUEST NUMBER BLOCK (prominent) ───────────────────────────
                 st.markdown("---")
                 st.subheader("📱 Block Scammer Number")

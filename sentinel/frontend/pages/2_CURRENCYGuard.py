@@ -168,8 +168,10 @@ with col2:
 
             except httpx.ConnectError:
                 st.error("Cannot connect to SENTINEL backend. Ensure backend is running on port 8000.")
+            except httpx.TimeoutException:
+                st.error("Analysis timed out. The image may be too large or complex. Try a smaller image.")
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"Analysis failed: {str(e)}")
     else:
         st.markdown("""
         <div style="background:#f8f9fa; padding:40px; border-radius:8px; 
