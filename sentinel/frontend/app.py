@@ -180,10 +180,25 @@ def fetch_health():
     }
 
 
+@st.cache_data(ttl=30)
+def fetch_timeline():
+    try:
+        r = requests.get(f"{API_BASE}/api/intelligence/timeline", timeout=5)
+        if r.status_code == 200:
+            return r.json()
+    except Exception:
+        pass
+    return {
+        "total_today": 0, "critical_today": 0, "high_today": 0,
+        "highest_risk_type": "LOW", "buckets": [],
+    }
+
+
 stats = fetch_stats()
 health = fetch_health()
 recent_events = fetch_recent()
 correlations = fetch_correlations()
+timeline = fetch_timeline()
 
 
 # ── MODULE STATUS ROW ──────────────────────────────────────────────────────────
@@ -206,6 +221,58 @@ for i, (mod_name, mod_info) in enumerate(health.get("modules", {}).items()):
             <span class="status-pill {css_class}">{status.upper()}</span>
         </div>
         """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+
+# ── LIVE THREAT MONITOR ───────────────────────────────────────────────────────
+st.markdown("### Live Threat Monitor")
+
+# Threat counter
+total_today = timeline.get("total_today", 0)
+critical_today = timeline.get("critical_today", 0)
+high_today = timeline.get("high_today", 0)
+
+col_counter, col_chart = st.columns([1, 2])
+
+with col_counter:
+    if total_today > 0:
+        counter_color = "#dc2626" if critical_today > 0 else "#f97316" if high_today > 0 else "#00aaff"
+        st.markdown(f"""
+        <div class="sentinel-card" style="text-align:center;padding:24px">
+            <div class="stat-label">Threats Detected Today</div>
+            <div class="stat-number" style="color:{counter_color}">{total_today}</div>
+            {"<div style='color:#dc2626;font-size:0.8rem;font-weight:bold'>CRITICAL: " + str(critical_today) + "</div>" if critical_today > 0 else ""}
+            {"<div style='color:#f97316;font-size:0.8rem'>HIGH: " + str(high_today) + "</div>" if high_today > 0 else ""}
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="sentinel-card" style="text-align:center;padding:24px">
+            <div class="stat-label">Threats Detected Today</div>
+            <div class="stat-number" style="color:#374151">0</div>
+            <div style="color:#6b7280;font-size:0.75rem">No threats detected yet</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+with col_chart:
+    buckets = timeline.get("buckets", [])
+    if buckets:
+        # Filter to only hours with activity for cleaner chart
+        active_buckets = [b for b in buckets if b.get("total", 0) > 0]
+        if active_buckets:
+            chart_data = {
+                "Hour": [b["hour"] for b in active_buckets],
+                "CRITICAL": [b.get("CRITICAL", 0) for b in active_buckets],
+                "HIGH": [b.get("HIGH", 0) for b in active_buckets],
+                "MEDIUM": [b.get("MEDIUM", 0) for b in active_buckets],
+                "LOW": [b.get("LOW", 0) for b in active_buckets],
+            }
+            st.bar_chart(chart_data, x="Hour", color=["#dc2626", "#f97316", "#f59e0b", "#4ade80"])
+        else:
+            st.info("No threat activity in time buckets yet.")
+    else:
+        st.info("Timeline data loading...")
 
 st.markdown("---")
 

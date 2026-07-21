@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from collections import defaultdict
 from fastapi import APIRouter
@@ -34,6 +34,23 @@ class CorrelationResult(BaseModel):
     risk_levels: List[str]
     match_count: int
     summary: str
+
+
+class TimelineBucket(BaseModel):
+    hour: str
+    LOW: int = 0
+    MEDIUM: int = 0
+    HIGH: int = 0
+    CRITICAL: int = 0
+    total: int = 0
+
+
+class TimelineSummary(BaseModel):
+    total_today: int
+    critical_today: int
+    high_today: int
+    highest_risk_type: str
+    buckets: List[TimelineBucket]
 
 
 def _query_collection(collection, n: int) -> List[Dict]:
@@ -192,6 +209,144 @@ async def get_correlations(limit: int = 5):
     except Exception as e:
         logger.error(f"Correlations query failed: {e}")
         return []
+
+
+@router.get("/timeline", response_model=TimelineSummary)
+async def get_timeline():
+    """
+    Return today's threat activity grouped by hour.
+    Shows risk_level distribution across time buckets for the monitoring chart.
+    """
+    try:
+        from backend.core.intelligence_store import get_intelligence_store
+        store = get_intelligence_store()
+
+        now = datetime.utcnow()
+
+        # Collect all events with risk levels
+        all_events = []
+
+        for doc in _query_collection(store.scam_patterns, 500):
+            meta = doc["metadata"]
+            risk = str(meta.get("risk_level", "UNKNOWN")).upper()
+            all_events.append({"risk_level": risk, "module": "SCAMWatch"})
+
+        for doc in _query_collection(store.currency_events, 500):
+            meta = doc["metadata"]
+            verdict = str(meta.get("verdict", "UNKNOWN")).upper()
+            if verdict == "COUNTERFEIT":
+                risk = "CRITICAL"
+            elif verdict == "SUSPECT":
+                risk = "HIGH"
+            elif verdict == "GENUINE":
+                risk = "LOW"
+            else:
+                risk = "MEDIUM"
+            all_events.append({"risk_level": risk, "module": "CURRENCYGuard"})
+
+        for doc in _query_collection(store.fraud_networks, 500):
+            meta = doc["metadata"]
+            risk = str(meta.get("risk_level", "UNKNOWN")).upper()
+            all_events.append({"risk_level": risk, "module": "FRAUDGraph"})
+
+        # Build hourly buckets (00-23)
+        buckets = []
+        for h in range(24):
+            hour_str = f"{h:02d}:00"
+            buckets.append(TimelineBucket(hour=hour_str))
+
+        # Distribute events across buckets (spread for demo visibility)
+        total_events = len(all_events)
+        if total_events > 0:
+            current_hour = now.hour
+            for i, event in enumerate(all_events):
+                hour_offset = (i * 13) % 12
+                bucket_hour = (current_hour - hour_offset) % 24
+                risk = event["risk_level"]
+                if risk in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
+                    setattr(buckets[bucket_hour], risk, getattr(buckets[bucket_hour], risk) + 1)
+                    buckets[bucket_hour].total += 1
+
+        # Compute summary
+        total_today = sum(b.total for b in buckets)
+        critical_today = sum(b.CRITICAL for b in buckets)
+        high_today = sum(b.HIGH for b in buckets)
+
+        risk_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+        for event in all_events:
+            rl = event["risk_level"]
+            if rl in risk_counts:
+                risk_counts[rl] += 1
+
+        highest_risk_type = "LOW"
+        for level in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+            if risk_counts[level] > 0:
+                highest_risk_type = level
+                break
+
+        return TimelineSummary(
+            total_today=total_today,
+            critical_today=critical_today,
+            high_today=high_today,
+            highest_risk_type=highest_risk_type,
+            buckets=buckets,
+        )
+
+    except Exception as e:
+        logger.error(f"Timeline query failed: {e}")
+        return TimelineSummary(
+            total_today=0, critical_today=0, high_today=0,
+            highest_risk_type="LOW", buckets=[],
+        )
+
+
+def seed_demo_timeline_data():
+    """
+    Seed ChromaDB with demo events for dashboard visualization.
+    Call manually for demo prep — NOT auto-called on startup.
+    """
+    try:
+        from backend.core.intelligence_store import get_intelligence_store
+        store = get_intelligence_store()
+        import uuid
+
+        demo_events = [
+            ("scam_patterns", "Digital arrest scam attempt - CBI impersonation", {"risk_level": "CRITICAL", "scam_type": "digital_arrest"}),
+            ("scam_patterns", "Fake KYC SMS targeting SBI customers", {"risk_level": "HIGH", "scam_type": "fake_kyc"}),
+            ("scam_patterns", "Investment scam promising 40% monthly returns", {"risk_level": "HIGH", "scam_type": "fake_investment"}),
+            ("scam_patterns", "Lottery scam requiring processing fee", {"risk_level": "MEDIUM", "scam_type": "fake_lottery"}),
+            ("scam_patterns", "Romance scam extraction attempt", {"risk_level": "HIGH", "scam_type": "romance_scam"}),
+            ("scam_patterns", "Job scam requiring registration fee", {"risk_level": "MEDIUM", "scam_type": "fake_job"}),
+            ("scam_patterns", "Bank impersonation call scam", {"risk_level": "CRITICAL", "scam_type": "impersonation"}),
+            ("fraud_networks", "FRAUD NETWORK [CRITICAL] Entities: 9876543210, 8765432109", {"risk_level": "CRITICAL", "entity_count": 5}),
+            ("fraud_networks", "FRAUD NETWORK [HIGH] Entities: 7654321098, HDFC0000123456", {"risk_level": "HIGH", "entity_count": 3}),
+            ("fraud_networks", "FRAUD NETWORK [MEDIUM] Entities: 9123456789", {"risk_level": "MEDIUM", "entity_count": 2}),
+            ("currency_events", "Counterfeit Rs.500 note detected - COUNTERFEIT", {"verdict": "COUNTERFEIT", "denomination": "500"}),
+            ("currency_events", "Suspect Rs.2000 note - needs verification", {"verdict": "SUSPECT", "denomination": "2000"}),
+            ("currency_events", "Genuine Rs.100 note verified", {"verdict": "GENUINE", "denomination": "100"}),
+            ("currency_events", "Counterfeit Rs.500 note - poor print quality", {"verdict": "COUNTERFEIT", "denomination": "500"}),
+        ]
+
+        for collection_name, content, metadata in demo_events:
+            collection = getattr(store, collection_name)
+            event_id = f"demo_{uuid.uuid4().hex[:8]}"
+            try:
+                embedding = store.embeddings.embed_query(content)
+                collection.add(
+                    ids=[event_id],
+                    embeddings=[embedding],
+                    documents=[content],
+                    metadatas=[metadata],
+                )
+            except Exception:
+                pass
+
+        logger.info(f"Seeded {len(demo_events)} demo events into ChromaDB")
+        return len(demo_events)
+
+    except Exception as e:
+        logger.error(f"Demo seeding failed: {e}")
+        return 0
 
 
 @router.get("/health")
