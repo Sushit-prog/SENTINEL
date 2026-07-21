@@ -3,6 +3,12 @@
 import streamlit as st
 import httpx
 import json
+import sys
+import os
+
+# Add project root to Python path for backend imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from backend.config import get_settings
 
 st.set_page_config(
@@ -16,6 +22,22 @@ BACKEND_URL = settings.backend_url
 
 st.title("🔍 SCAMWatch")
 st.caption("AI-powered scam detection. Paste any suspicious message or call transcript below.")
+
+# How It Works section
+with st.expander("How SCAMWatch Works", expanded=False):
+    st.markdown("""
+    **SCAMWatch** uses a 5-step AI pipeline to detect scams:
+
+    1. **Rule-based Classification** — Fast pattern matching against 7 Indian scam types (zero API cost)
+    2. **LLM Deep Analysis** — Groq Llama 3.3 70B analyzes semantic meaning and context
+    3. **Risk Scoring** — Multi-signal engine combining keywords, urgency, authority impersonation
+    4. **Intelligence Storage** — High-risk patterns stored in ChromaDB for cross-module correlation
+    5. **Citizen Alert** — Structured alert with emergency contacts and MHA payload
+
+    **Supported Scam Types:** Digital Arrest, Fake KYC, Fake Investment, Fake Job, Fake Lottery, Impersonation, Romance Scam
+
+    **Languages:** English, Hindi, Tamil, Bengali, Telugu
+    """)
 
 RISK_COLORS = {
     "LOW": ("🟢", "green", "#d4edda"),
@@ -66,6 +88,9 @@ with st.sidebar:
     for name in SAMPLE_TEXTS:
         if st.button(name, use_container_width=True):
             st.session_state["sample_text"] = SAMPLE_TEXTS[name]
+    # Auto-load first sample if nothing selected
+    if "sample_text" not in st.session_state:
+        st.session_state["sample_text"] = SAMPLE_TEXTS["Digital Arrest Scam"]
 
 default_text = st.session_state.get("sample_text", "")
 

@@ -3,6 +3,10 @@ import streamlit.components.v1 as components
 import requests
 import json
 import os
+import sys
+
+# Add project root to Python path for backend imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 API_BASE = "http://localhost:8000"
 
@@ -54,6 +58,23 @@ st.markdown("""
     <p style="color:#888;margin:4px 0 0">Graph AI Fraud Network Mapping &nbsp;|&nbsp; Law Enforcement Intelligence Module</p>
 </div>
 """, unsafe_allow_html=True)
+
+# How It Works section
+with st.expander("How FRAUDGraph Works", expanded=False):
+    st.markdown("""
+    **FRAUDGraph** maps fraud networks using graph AI and entity resolution:
+
+    1. **Entity Extraction** — Parses phone numbers, accounts, devices from input + LLM extracts from victim statements
+    2. **Relationship Inference** — Identifies connections: who called whom, money transfers, device usage
+    3. **Neo4j Graph Storage** — Writes entities and relationships to graph database (in-memory fallback available)
+    4. **NetworkX Analysis** — Connected components detect fraud rings, betweenness centrality finds hub nodes
+    5. **Pyvis Visualization** — Interactive network graph with color-coded entity types
+    6. **Evidence Kit** — Court-admissible ZIP bundle with PDF, graph HTML, CSV, JSON, and manifest
+
+    **Entity Types:** PHONE, ACCOUNT, DEVICE, VICTIM, LOCATION
+
+    **Relationship Types:** CALLED, TRANSFERRED_TO, USED_BY, CONTACTED, BELONGS_TO
+    """)
 
 # ── INPUT PANEL ──────────────────────────────────────────────────────────────
 with st.container():
@@ -123,7 +144,7 @@ with col_btn:
     )
 
 # ── SAMPLE DATA ───────────────────────────────────────────────────────────────
-with st.expander("💡 Load Sample Data (Digital Arrest Ring)", expanded=False):
+with st.expander("Load Sample Data (Digital Arrest Ring)", expanded=False):
     if st.button("Load Sample", key="load_sample"):
         st.session_state["sample_phones"] = "9876543210\n8765432109\n7654321098"
         st.session_state["sample_accounts"] = "HDFC0000123456\nSBI99887766"
@@ -138,6 +159,20 @@ with st.expander("💡 Load Sample Data (Digital Arrest Ring)", expanded=False):
             "the entire operation from what sounded like a call centre."
         )
         st.rerun()
+    # Auto-load sample if nothing selected
+    if "sample_phones" not in st.session_state:
+        st.session_state["sample_phones"] = "9876543210\n8765432109\n7654321098"
+        st.session_state["sample_accounts"] = "HDFC0000123456\nSBI99887766"
+        st.session_state["sample_devices"] = "IMEI:359847101234567"
+        st.session_state["sample_statement"] = (
+            "I received a call from 9876543210 claiming to be from CBI. "
+            "They said my Aadhaar number was linked to a money laundering case. "
+            "A second person on 8765432109 posed as a Supreme Court judge. "
+            "They forced me to transfer 2,40,000 rupees to account HDFC0000123456 "
+            "and later 80,000 rupees to SBI99887766. The calls were made from a device "
+            "with IMEI 359847101234567. A third operator on 7654321098 coordinated "
+            "the entire operation from what sounded like a call centre."
+        )
 
 # Apply sample data if loaded
 if "sample_phones" in st.session_state:

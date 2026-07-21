@@ -15,6 +15,7 @@ from backend.modules.currencyguard.feature_checks import (
     check_watermark_region,
     check_edge_sharpness,
     check_image_quality,
+    check_not_play_money,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,17 @@ def run_all_checks(image: np.ndarray, denomination: str) -> List[Dict]:
         logger.warning("Image quality check failed — skipping deep analysis")
         return checks
 
+    # Play money detection — early exit if detected
+    play_money = check_not_play_money(image)
+    checks.append(play_money)
+
+    if not play_money["passed"]:
+        logger.warning("Play money detected — flagging as COUNTERFEIT")
+        # Still run other checks for completeness, but mark as counterfeit
+        checks.append(check_aspect_ratio(image, denomination))
+        checks.append(check_color_distribution(image, denomination))
+        return checks
+
     checks.append(check_aspect_ratio(image, denomination))
     checks.append(check_color_distribution(image, denomination))
     checks.append(check_security_thread_region(image))
@@ -82,12 +94,13 @@ def compute_overall_score(checks: List[Dict]) -> Tuple[float, str]:
     Returns (score 0.0-1.0, verdict string).
     """
     WEIGHTS = {
-        "Image Quality": 0.05,
-        "Aspect Ratio": 0.10,
-        "Color Distribution": 0.15,
-        "Security Thread Region": 0.25,
-        "Serial Number Zone": 0.20,
-        "Watermark Region": 0.15,
+        "Image Quality": 0.03,
+        "Genuine Currency Paper": 0.20,
+        "Aspect Ratio": 0.08,
+        "Color Distribution": 0.12,
+        "Security Thread Region": 0.20,
+        "Serial Number Zone": 0.15,
+        "Watermark Region": 0.12,
         "Print Sharpness": 0.10,
     }
 

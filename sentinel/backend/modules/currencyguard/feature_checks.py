@@ -243,3 +243,77 @@ def check_image_quality(image: np.ndarray) -> dict:
         "details": f"Resolution: {w}x{h}px, brightness: {mean_brightness:.0f}/255. "
                    + (f"Issues: {', '.join(issues)}" if issues else "Image quality acceptable.")
     }
+
+
+def check_not_play_money(image: np.ndarray) -> dict:
+    """
+    Detect play money, monopoly notes, or obvious non-currency images.
+    Real Indian currency has specific characteristics that play money lacks.
+    """
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, w = image.shape[:2]
+
+    # Check 1: Color variance — real notes have rich, varied colors
+    # Play money often has flat, uniform colors
+    saturation = gray[:, :, 1]
+    sat_std = float(np.std(saturation))
+    sat_mean = float(np.mean(saturation))
+
+    # Check 2: Edge complexity — real notes have intricate patterns
+    gray_bgr = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray_bgr, 50, 150)
+    edge_density = float(np.sum(edges > 0)) / edges.size
+
+    # Check 3: Texture complexity — real notes have microprint and security features
+    # Use Laplacian to measure texture
+    laplacian = cv2.Laplacian(gray_bgr, cv2.CV_64F)
+    texture_complexity = float(np.std(laplacian))
+
+    # Check 4: Color channel distribution — real notes have specific ink patterns
+    b, g, r = cv2.split(image)
+    channel_std = float(np.std([np.std(b), np.std(g), np.std(r)]))
+
+    # Decision logic
+    issues = []
+    is_play_money = False
+
+    # Very low saturation variance suggests flat/uniform colors (play money)
+    if sat_std < 15:
+        issues.append(f"very low color variance (std: {sat_std:.1f})")
+        is_play_money = True
+
+    # Very low edge density suggests simple/flat design
+    if edge_density < 0.02:
+        issues.append(f"very low edge density ({edge_density:.4f})")
+        is_play_money = True
+
+    # Very low texture suggests no microprint/security features
+    if texture_complexity < 20:
+        issues.append(f"very low texture complexity ({texture_complexity:.1f})")
+        is_play_money = True
+
+    # Low channel variance suggests uniform coloring
+    if channel_std < 10:
+        issues.append(f"low color channel variance ({channel_std:.1f})")
+        is_play_money = True
+
+    # Multiple red flags = likely play money
+    if len(issues) >= 2:
+        passed = False
+        confidence = 0.90
+        details = f"SUSPECTED PLAY MONEY: {'; '.join(issues)}. This appears to be a play note, monopoly money, or non-genuine image."
+    elif len(issues) == 1:
+        passed = True
+        confidence = 0.50
+        details = f"Minor concern: {issues[0]}. Proceeding with analysis but results may be unreliable."
+    else:
+        passed = True
+        confidence = 0.85
+        details = f"Image appears to be genuine currency paper. Saturation std: {sat_std:.1f}, edge density: {edge_density:.4f}, texture: {texture_complexity:.1f}."
+
+    return {
+        "feature_name": "Genuine Currency Paper",
+        "passed": passed,
+        "confidence": round(confidence, 3),
+        "details": details
+    }

@@ -2,6 +2,11 @@
 
 import streamlit as st
 import httpx
+import sys
+import os
+
+# Add project root to Python path for backend imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 st.set_page_config(
     page_title="CURRENCYGuard — SENTINEL",
@@ -20,6 +25,25 @@ VERDICT_CONFIG = {
 
 st.title("💵 CURRENCYGuard")
 st.caption("AI-powered Indian currency authentication. Upload a note image for instant verification.")
+
+# How It Works section
+with st.expander("How CURRENCYGuard Works", expanded=False):
+    st.markdown("""
+    **CURRENCYGuard** uses computer vision to authenticate Indian currency notes:
+
+    1. **Image Quality Gate** — Rejects blurry, dark, or low-resolution images
+    2. **Play Money Detection** — Identifies play notes, monopoly money, and obvious fakes
+    3. **Aspect Ratio Check** — Verifies dimensions match RBI standards per denomination
+    4. **Color Distribution** — Analyzes HSV saturation patterns for genuine ink
+    5. **Security Thread** — Detects the windowed security thread ~1/3 from left edge
+    6. **Serial Number Zone** — Checks edge density in text regions
+    7. **Watermark Region** — Verifies Gandhi portrait area intensity variation
+    8. **Print Sharpness** — Laplacian variance for genuine vs photocopy detection
+
+    **Supported Denominations:** ₹50, ₹100, ₹200, ₹500, ₹2000
+
+    **Verdicts:** GENUINE, SUSPECT, COUNTERFEIT, INCONCLUSIVE
+    """)
 
 with st.sidebar:
     st.header("⚙️ Settings")
