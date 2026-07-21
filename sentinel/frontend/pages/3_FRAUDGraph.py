@@ -87,32 +87,40 @@ with st.container():
         with col1:
             phones_input = st.text_area(
                 "📱 Phone Numbers",
+                value=st.session_state.get("sample_phones", ""),
                 placeholder="One per line:\n9876543210\n8765432109",
                 height=120,
-                help="Indian or international phone numbers involved in the fraud"
+                help="Indian or international phone numbers involved in the fraud",
+                key="phones_area"
             )
 
         with col2:
             accounts_input = st.text_area(
                 "🏦 Bank Account / UPI IDs",
+                value=st.session_state.get("sample_accounts", ""),
                 placeholder="One per line:\nACC123456789\nuser@upi",
                 height=120,
-                help="Bank account numbers, UPI IDs, or wallet IDs"
+                help="Bank account numbers, UPI IDs, or wallet IDs",
+                key="accounts_area"
             )
 
         with col3:
             devices_input = st.text_area(
                 "📟 Device IDs / IMEI",
+                value=st.session_state.get("sample_devices", ""),
                 placeholder="One per line:\nIMEI:359847XXXXXX\nMAC:AA:BB:CC",
                 height=120,
-                help="Device fingerprints, IMEI numbers, or MAC addresses"
+                help="Device fingerprints, IMEI numbers, or MAC addresses",
+                key="devices_area"
             )
 
         victim_statement = st.text_area(
             "📋 Victim Statement (free text)",
+            value=st.session_state.get("sample_statement", ""),
             placeholder="Describe the fraud in detail. Include any phone numbers, accounts, or device details mentioned by the victim. The AI will extract and link entities automatically...",
             height=140,
-            help="Free text victim statement. LLM will extract entities and relationships automatically."
+            help="Free text victim statement. LLM will extract entities and relationships automatically.",
+            key="statement_area"
         )
 
     with col_legend:
