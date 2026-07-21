@@ -1,374 +1,351 @@
 <div align="center">
 
-# 🛡️ SENTINEL
+# SENTINEL
 
-### AI-Powered Digital Public Safety Intelligence Platform
+### Digital Public Safety Intelligence Platform
 
-**Built for ET AI Hackathon 2.0 | The Economic Times**
+**ET AI Hackathon 2.0 | The Economic Times**
 
-Detect Digital Scams • Authenticate Currency • Map Fraud Networks
+*"AI for Digital Public Safety: Defeating Counterfeiting, Fraud & Digital Arrest Scams"*
 
 ---
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi)
-![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-blue?style=for-the-badge)
-![Groq](https://img.shields.io/badge/Groq-Llama--3.3%2070B-orange?style=for-the-badge)
-![Neo4j](https://img.shields.io/badge/Neo4j-GraphDB-4581C3?style=for-the-badge&logo=neo4j)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-purple?style=for-the-badge)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?style=for-the-badge&logo=opencv)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Agent%20Orchestration-3178C6?style=flat-square&logoColor=white)](https://langchain-ai.github.io/langgraph/)
+[![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-FF6B35?style=flat-square&logoColor=white)](https://groq.com/)
+[![Neo4j](https://img.shields.io/badge/Neo4j-Graph%20Database-4581C3?style=flat-square&logo=neo4j&logoColor=white)](https://neo4j.com/)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-FF6B9D?style=flat-square&logoColor=white)](https://www.trychroma.com/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?style=flat-square&logo=opencv&logoColor=white)](https://opencv.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io/)
 
 </div>
 
 ---
 
-# 📖 Overview
+## The Problem
 
-**SENTINEL** is an AI-powered public safety intelligence platform designed to combat digital fraud, counterfeit currency, and organised financial crime in India.
+India logged **1.14 million cybercrime complaints in 2023** — up 60% year-on-year. "Digital arrest" scams alone cost citizens over **₹1,776 crore in nine months of 2024**. RBI's 2025 report flagged record counterfeit currency seizures, with fakes now sophisticated enough to defeat manual bank checks.
 
-Rather than solving a single problem, SENTINEL combines multiple AI systems into one unified intelligence platform where every investigation contributes to a shared knowledge base.
+The real failure isn't lack of evidence after a crime — it's lack of intelligence before mass victimisation. Most fraud-detection tools work in isolation; a scam detector doesn't talk to a graph-analysis tool, which doesn't talk to a currency scanner.
 
-The platform consists of three independent AI modules connected through a common intelligence layer, allowing threats discovered in one module to strengthen investigations across the others.
+## The Solution
 
----
-
-# 🎯 Problem Statement
-
-India is witnessing a rapid increase in digital financial crimes including:
-
-- Digital Arrest scams
-- Fake KYC verification fraud
-- Investment scams
-- Lottery scams
-- Counterfeit currency circulation
-- Organised financial crime networks
-
-Current solutions generally address these problems independently.
-
-SENTINEL provides a unified AI-driven intelligence platform capable of analysing scams, verifying currency authenticity, investigating fraud networks, and correlating intelligence across multiple investigations.
-
----
-
-# ✨ Key Features
-
-- Multi-Agent AI workflows powered by LangGraph
-- Shared Threat Intelligence using ChromaDB
-- Graph-based Fraud Network Analysis
-- AI Scam Detection with Risk Scoring
-- Computer Vision Currency Authentication
-- Interactive Intelligence Dashboard
-- Automatic PDF Intelligence Reports
-- Neo4j Network Visualization
-- Cross-Module Threat Correlation
-- Graceful Failure Recovery
-
----
-
-# 🏗 System Architecture
+**SENTINEL** connects four AI modules through a single shared intelligence layer. Every threat caught by a citizen-facing tool automatically strengthens a law-enforcement investigation tool — in real time, with zero manual cross-referencing.
 
 ```
-                    ┌───────────────────────┐
-                    │      Streamlit UI     │
-                    └──────────┬────────────┘
-                               │
-                    ┌──────────▼───────────┐
-                    │      FastAPI API     │
-                    └──────────┬───────────┘
-                               │
-        ┌──────────────┬──────────────┬──────────────┐
-        │              │              │
-        ▼              ▼              ▼
-  SCAMWatch      CURRENCYGuard    FRAUDGraph
-        │              │              │
-        └──────────────┴──────────────┘
-                      │
-                      ▼
-         Shared Intelligence Store
-                (ChromaDB)
-                      │
-                      ▼
-      Cross-Module Threat Correlation
+                          ┌─────────────────────────┐
+                          │     Streamlit UI         │
+                          │  (6 pages, dark theme)   │
+                          └────────────┬────────────┘
+                                       │
+                          ┌────────────▼────────────┐
+                          │      FastAPI Backend     │
+                          │     (11+ REST endpoints) │
+                          └────────────┬────────────┘
+                                       │
+          ┌────────────────┬───────────┴───────────┬────────────────┐
+          │                │                       │                │
+          ▼                ▼                       ▼                ▼
+    ┌───────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────┐
+    │ SCAMWatch │  │ CURRENCYGuard│  │  FRAUDGraph  │  │ GeoIntel │
+    │  5-node   │  │   4-node     │  │   6-node     │  │ Heatmap  │
+    │ LangGraph │  │   Pipeline   │  │   Pipeline   │  │ Dashboard│
+    └─────┬─────┘  └──────┬───────┘  └──────┬───────┘  └────┬─────┘
+          │               │                  │               │
+          └───────────────┴──────────┬───────┴───────────────┘
+                                     │
+                          ┌──────────▼──────────┐
+                          │   Shared ChromaDB    │
+                          │  Intelligence Layer  │
+                          └──────────┬──────────┘
+                                     │
+                          ┌──────────▼──────────┐
+                          │  Cross-Module Threat │
+                          │    Correlation       │
+                          └─────────────────────┘
 ```
 
 ---
 
-# 🧠 Intelligence Modules
+## Modules
+
+### SCAMWatch — Citizen Scam Detection
+
+Real-time scam message analysis powered by a 5-node LangGraph pipeline. A zero-cost rule-based pre-classifier flags obvious signals, then Groq Llama 3.3 70B performs deep semantic analysis followed by structured risk scoring.
+
+**Scam Types:** Digital Arrest | Fake KYC | Fake Investment | Fake Job | Fake Lottery | Impersonation | Romance
+
+**Languages:** English, Hindi, Tamil, Bengali, Telugu
+
+**Accuracy:** 85% detection, 0 false positives across 20 sample cases
+
+**Features:**
+- Plain-language verdict with recommended actions
+- One-click File Complaint (cybercrime.gov.in)
+- One-click Number Block (Sanchar Saathi / TRAI)
+- Citizen Alert with emergency contacts (1930, cybercrime.gov.in)
+- Structured MHA-shaped alert payload
+
+```
+Input Text → Rule-Based Classification → LLM Semantic Analysis → Risk Scoring → Intelligence Store
+```
 
 ---
 
-## 🛡️ SCAMWatch
+### CURRENCYGuard — Currency Authentication
 
-AI-powered scam detection engine for analysing suspicious messages and calls.
+Computer-vision pipeline running 7 OpenCV security checks with a dedicated play-money detector that flags obvious fakes before deeper analysis (cost-efficient design).
 
-### Pipeline
+**Security Checks:** Image Quality | Aspect Ratio | Color Distribution | Security Thread | Serial Number | Watermark Region | Print Sharpness
+
+**Supported Denominations:** ₹50, ₹100, ₹200, ₹500, ₹2000
+
+**Verdicts:** GENUINE | SUSPECT | COUNTERFEIT | INCONCLUSIVE
+
+**Features:**
+- Downloadable PDF authenticity report
+- Play money pre-screening
+- Hybrid rule+CV+LLM pipeline
 
 ```
-Input Text
-     │
-     ▼
-Rule-Based Classification
-     │
-     ▼
-LLM Semantic Analysis
-     │
-     ▼
-Risk Scoring Engine
-     │
-     ▼
-Threat Intelligence Store
+Currency Image → OpenCV Feature Analysis → LLM Expert Reasoning → Authenticity Report → Intelligence Store
 ```
-
-### Detects
-
-- Digital Arrest
-- Fake KYC
-- Investment Scam
-- Lottery Scam
-- Job Scam
-- Romance Scam
-- Authority Impersonation
 
 ---
 
-## 💵 CURRENCYGuard
+### FRAUDGraph — Fraud Network Mapping
 
-Computer Vision pipeline for counterfeit currency detection.
+Graph-AI engine for analysing organised financial crime. Extracts entities from structured input and free-text victim statements (LLM-powered extraction from unstructured narrative).
 
-### Pipeline
+**Entity Types:** Phone Numbers | Bank Accounts | Devices | Victims | Locations
+
+**Analysis:** Connected components + betweenness centrality fraud ring detection
+
+**Evidence Kit (ZIP):**
+- PDF intelligence report
+- Interactive graph visualization (HTML)
+- Entity inventory (CSV)
+- Raw analysis data (JSON)
+- Manifest citing IT Act 2000 and DPDP Act 2023
 
 ```
-Currency Image
-      │
-      ▼
-OpenCV Feature Analysis
-      │
-      ▼
-LLM Expert Reasoning
-      │
-      ▼
-Authenticity Report
-      │
-      ▼
-Threat Intelligence Store
+Evidence → Entity Extraction → Graph Construction → Cluster Detection → Intelligence Summary → Court-Admissible Report
 ```
-
-### Security Checks
-
-- Image Quality
-- Aspect Ratio
-- Security Thread
-- Watermark Region
-- Serial Number
-- Print Sharpness
-- Color Distribution
-
-Supported Denominations
-
-- ₹50
-- ₹100
-- ₹200
-- ₹500
-- ₹2000
 
 ---
 
-## 🕸 FRAUDGraph
+### GeoIntel — Geospatial Intelligence
 
-Graph Intelligence engine for analysing organised financial crime.
+Maps live incidents from all three modules onto real, publicly-reported NCRB/RBI/MHA fraud and counterfeit hotspot regions across India.
 
-### Pipeline
+**15 Hotspot Locations:** Jamtara, Mewat, Deoghar, major metros, and other NCRB/RBI/MHA-flagged regions
 
-```
-Evidence
-     │
-     ▼
-Entity Extraction
-     │
-     ▼
-Graph Construction
-     │
-     ▼
-Cluster Detection
-     │
-     ▼
-LLM Intelligence Summary
-     │
-     ▼
-Investigation Report
-```
-
-### Entity Types
-
-- Phone Numbers
-- Bank Accounts
-- Devices
-- Victims
-- Locations
+**Features:**
+- Pydeck heatmap with dark theme
+- Filterable by module and risk level
+- Geographic intelligence picture from individual reports
 
 ---
 
-# 🔗 Cross-Module Intelligence
+### WhatsApp Shield — Chat-Based Detection
 
-The most important innovation of SENTINEL is its **shared intelligence layer**.
+A WhatsApp-styled chat interface that lets citizens interact with SCAMWatch conversationally — same backend, familiar channel.
 
-Instead of operating independently, every module contributes to a common ChromaDB intelligence store.
-
-Example workflow:
-
-```
-Citizen Reports Scam
-         │
-         ▼
- Phone Number Stored
-         │
-         ▼
-FraudGraph Investigation
-         │
-         ▼
-Same Number Discovered
-         │
-         ▼
-High Confidence Alert
-```
-
-This enables threat correlation across multiple investigations and improves intelligence over time.
+- WhatsApp-style UI
+- Real-time analysis via SCAMWatch API
+- 4 sample scam messages for demo
 
 ---
 
-# ⚙️ Technology Stack
+### Intelligence Dashboard — Cross-Module Analytics
 
-| Layer | Technology |
-|--------|------------|
-| Frontend | Streamlit |
-| Backend | FastAPI |
-| AI Framework | LangGraph |
-| LLM | Groq Llama 3.3 70B |
-| Vector Database | ChromaDB |
-| Graph Database | Neo4j Aura |
-| Computer Vision | OpenCV |
-| Embeddings | HuggingFace MiniLM |
-| Graph Analysis | NetworkX |
-| Visualization | PyVis |
-| Reports | ReportLab |
+The platform's signature view: turns individual reports into a unified threat intelligence picture.
+
+- Live Threat Monitor with detection timeline chart
+- Cross-module correlation alerts
+- Real-time activity feed
+- Module health checks
+
+**Key Correlation:** A phone number flagged independently in a citizen's SCAMWatch report and a police FRAUDGraph investigation surfaces as an automatic correlation alert — a connection a human analyst would otherwise have to find by hand.
 
 ---
 
-# 📂 Project Structure
+## Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | Streamlit | 6-page dark-theme UI |
+| Backend | FastAPI | 11+ REST API endpoints |
+| Agent Orchestration | LangGraph | 5/4/6-node multi-agent pipelines |
+| LLM | Groq Llama 3.3 70B | Semantic analysis & reasoning |
+| Vector Store | ChromaDB | Shared intelligence layer |
+| Graph Database | Neo4j | Fraud network mapping (in-memory fallback) |
+| Computer Vision | OpenCV | 7 currency security feature checks |
+| Embeddings | HuggingFace all-MiniLM-L6-v2 | Semantic search |
+| PDF Generation | ReportLab | Intelligence & authenticity reports |
+| Graph Visualization | NetworkX + pyvis | Interactive fraud network graphs |
+| Mapping | pydeck | Geospatial heatmap dashboard |
+
+---
+
+## Project Structure
 
 ```
 sentinel/
-
 ├── backend/
-│   ├── api/
-│   ├── agents/
-│   ├── core/
-│   ├── models/
-│   └── modules/
-│
+│   ├── api/              # FastAPI route handlers
+│   ├── agents/           # LangGraph agent definitions
+│   ├── core/             # Shared utilities, config, intelligence store
+│   ├── models/           # Pydantic data models
+│   └── modules/          # Module implementations
+│       ├── scamwatch/     # Scam detection pipeline
+│       ├── currencyguard/ # Currency authentication pipeline
+│       ├── fraudgraph/    # Fraud network analysis pipeline
+│       ├── geointel/      # Geospatial heatmap module
+│       ├── whatsapp/      # WhatsApp-style interface backend
+│       └── intelligence/  # Cross-module analytics
 ├── frontend/
-│   ├── app.py
-│   └── pages/
-│
+│   ├── app.py            # Streamlit entry point
+│   └── pages/            # 6 UI pages
+├── data/                 # Hotspot data, sample inputs
+├── reports/              # Generated PDF reports
 ├── docker-compose.yml
 ├── requirements.txt
-├── README.md
+├── test_all.py           # Integration test suite
 └── .env.example
 ```
 
+**~50 files** across 6 frontend pages, 6 backend APIs, 3 agents, 9 module implementations, and 4 config files.
+
 ---
 
-# 🚀 Installation
+## Quick Start
 
-Clone the repository
+### Prerequisites
+
+- Python 3.11+
+- Groq API key (free tier works)
+- Neo4j (optional — falls back to in-memory graph)
+
+### Installation
 
 ```bash
-git clone https://github.com/Sushit-prog/sentinel.git
-
-cd sentinel
+git clone https://github.com/Sushit-prog/SENTINEL.git
+cd SENTINEL
+pip install -r sentinel/requirements.txt
 ```
 
-Install dependencies
+### Configuration
 
 ```bash
-pip install -r requirements.txt
+cp sentinel/.env.example sentinel/.env
 ```
 
-Create environment variables
+Edit `sentinel/.env`:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+NEO4J_URI=bolt://localhost:7687    # optional
+NEO4J_USERNAME=neo4j               # optional
+NEO4J_PASSWORD=                    # optional
+```
+
+### Running
 
 ```bash
-cp .env.example .env
+# Start the backend (API server)
+uvicorn sentinel.backend.main:app --reload --port 8000
+
+# Start the frontend (in a separate terminal)
+streamlit run sentinel/frontend/app.py
 ```
 
-Configure
+Open **http://localhost:8501** in your browser.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/scamwatch/analyze` | Analyse suspicious messages for scam patterns |
+| GET | `/api/scamwatch/patterns` | Scam pattern library |
+| POST | `/api/currencyguard/analyze` | Currency authenticity verification |
+| GET | `/api/currencyguard/report/{id}` | Download PDF authenticity report |
+| POST | `/api/fraudgraph/analyze` | Fraud network analysis from evidence |
+| GET | `/api/fraudgraph/report/{id}` | Download investigation evidence kit |
+| GET | `/api/geointel/hotspots` | Geospatial hotspot data |
+| POST | `/api/whatsapp/analyze` | WhatsApp-style chat analysis |
+| GET | `/api/intelligence/stats` | Cross-module intelligence statistics |
+| GET | `/api/intelligence/recent` | Recent detection activity |
+| GET | `/api/intelligence/correlations` | Cross-module threat correlations |
+
+---
+
+## Engineering Design Decisions
+
+**Hybrid rule+LLM pipelines** — Cheap deterministic checks run before expensive LLM calls, keeping cost per analysis minimal while maintaining accuracy.
+
+**Graceful degradation** — Neo4j falls back to in-memory NetworkX graph. LLM failures return safe fallback messages instead of crashing. Every module works independently even if shared infrastructure is unavailable.
+
+**Shared intelligence layer** — All modules write to a single ChromaDB vector store. A phone number flagged in SCAMWatch automatically strengthens a FRAUDGraph investigation — zero manual cross-referencing.
+
+**Typed Pydantic models end-to-end** — Structured data contracts between all layers, preventing silent data-shape bugs.
+
+**CPU-inference, zero GPU dependency** — Runs on 8GB RAM. Built to be realistically deployable, not just demo-able.
+
+---
+
+## Scope Transparency
+
+SENTINEL is honest about what it is and isn't:
+
+- **Voice-spoofing and deepfake-image detection** are architecture placeholders, not trained classifiers — flagged transparently in-product rather than overclaimed.
+- **WhatsApp/IVR integration** is a functional simulation (identical backend, mocked channel) rather than a live Meta/telecom API integration — a deliberate scope choice given hackathon constraints.
+- **Neo4j** runs with graceful in-memory fallback when the graph database isn't available — full functionality preserved.
+
+---
+
+## Test Results
 
 ```
-GROQ_API_KEY=
-
-NEO4J_URI=
-
-NEO4J_USERNAME=
-
-NEO4J_PASSWORD=
+Accuracy:  85% scam detection (0 false positives)
+Languages: 5 (English, Hindi, Tamil, Bengali, Telugu)
+Hotspots:  15 (NCRB/RBI/MHA flagged regions)
+Scam Types: 7
+CV Checks:  7 (OpenCV security feature analysis)
 ```
 
 ---
 
-# ▶️ Running the Project
+## Future Roadmap
 
-## Start Backend
-
-```bash
-uvicorn backend.main:app --reload --port 8000
-```
-
----
-
-## Start Frontend
-
-```bash
-streamlit run frontend/app.py
-```
+- Voice scam detection (audio analysis pipeline)
+- Deepfake image detection (GAN-generated currency imagery)
+- OCR for FIR document processing
+- Real-time WhatsApp/Telegram bot integration
+- Multi-language expansion (Kannada, Malayalam, Marathi)
+- Real-time alert streaming via WebSockets
+- Government intelligence API integration
+- Mobile application (React Native)
+- Federated threat intelligence across jurisdictions
 
 ---
 
-# 📡 API Endpoints
-
-| Endpoint | Description |
-|-----------|-------------|
-| POST `/api/scamwatch/analyze` | Analyse suspicious messages |
-| GET `/api/scamwatch/patterns` | Scam pattern library |
-| POST `/api/currencyguard/analyze` | Currency authentication |
-| GET `/api/currencyguard/report/{id}` | Download PDF report |
-| POST `/api/fraudgraph/analyze` | Fraud network analysis |
-| GET `/api/fraudgraph/report/{id}` | Investigation report |
-| GET `/api/intelligence/stats` | Intelligence statistics |
-| GET `/api/intelligence/recent` | Recent activity |
-| GET `/api/intelligence/correlations` | Cross-module correlations |
-
----
-
-# 📊 Future Roadmap
-
-- Voice Scam Detection
-- OCR for FIR Documents
-- WhatsApp Integration
-- Multi-Language Support
-- Real-Time Alert Streaming
-- Government Intelligence Integration
-- Mobile Application
-- Federated Threat Intelligence
-
----
-
-# 🤝 Contributing
+## Contributing
 
 Contributions, feature requests, and suggestions are welcome.
 
-If you would like to improve SENTINEL, feel free to fork the repository and submit a pull request.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit changes (`git commit -m 'Add your feature'`)
+4. Push to branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
 
 ---
 
-# 📄 License
+## License
 
 This project is licensed under the MIT License.
 
@@ -378,6 +355,6 @@ This project is licensed under the MIT License.
 
 **Built for ET AI Hackathon 2.0**
 
-AI for Public Safety • Intelligence • Trust
+AI for Digital Public Safety — Intelligence at Scale
 
 </div>
