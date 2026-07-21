@@ -45,6 +45,22 @@ with st.expander("How CURRENCYGuard Works", expanded=False):
     **Verdicts:** GENUINE, SUSPECT, COUNTERFEIT, INCONCLUSIVE
     """)
 
+# Deepfake Detection placeholder
+with st.expander("Deepfake Detection (Coming Soon)", expanded=False):
+    st.markdown("""
+    **Deepfake Detection** module for identifying manipulated currency images:
+
+    - **Image Authenticity Analysis** — Detect digitally altered or合成 currency images
+    - **Metadata Forensics** — Analyze EXIF data for signs of manipulation
+    - **Neural Network Detection** — CNN-based classifier for deepfake currency images
+    - **UV Feature Simulation** — Simulate UV light analysis for security features
+
+    This module addresses the growing threat of AI-generated counterfeit currency images
+    used in online fraud and digital payment scams.
+
+    **Status:** Architecture designed, model training in progress.
+    """)
+
 with st.sidebar:
     st.header("⚙️ Settings")
     denomination = st.selectbox(

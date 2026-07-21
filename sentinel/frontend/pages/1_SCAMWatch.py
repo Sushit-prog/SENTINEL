@@ -97,7 +97,7 @@ default_text = st.session_state.get("sample_text", "")
 col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
-    st.subheader("📝 Input")
+    st.subheader("Input")
     text_input = st.text_area(
         "Paste suspicious message or call transcript",
         value=default_text,
@@ -108,6 +108,22 @@ with col1:
 
     char_count = len(text_input)
     st.caption(f"{char_count} characters")
+
+    # Voice Scam Detection placeholder
+    with st.expander("Voice Scam Detection (Coming Soon)", expanded=False):
+        st.markdown("""
+        **Speech AI** module for voice-based scam detection:
+
+        - **Voice Spoofing Detection** — Identify AI-generated voices in scam calls
+        - **Call Pattern Analysis** — Detect suspicious call flow sequences
+        - **Number Spoofing Detection** — Identify caller ID manipulation
+        - **Real-time Alert** — Flag active scam sessions to telecom providers
+
+        This module uses advanced speech AI models to analyze voice characteristics
+        and detect deepfake or AI-generated voices commonly used in digital arrest scams.
+
+        **Status:** Architecture designed, model training in progress.
+        """)
 
     analyze_clicked = st.button(
         "🔍 Analyze for Scam",
