@@ -155,13 +155,29 @@ class GraphBuilder:
                 from_val = str(r.get("from_value", ""))
                 to_val = str(r.get("to_value", ""))
                 rel_type = r.get("type", "CONTACTED")
-                if from_val in entity_map and to_val in entity_map:
-                    relationships.append(Relationship(
-                        from_id=entity_map[from_val],
-                        to_id=entity_map[to_val],
-                        rel_type=rel_type,
-                        weight=1.0
-                    ))
+
+                # Skip if either value not in entity map
+                if from_val not in entity_map or to_val not in entity_map:
+                    continue
+
+                from_id = entity_map[from_val]
+                to_id = entity_map[to_val]
+
+                # Filter out semantically invalid relationships
+                # PHONE cannot CALLED ACCOUNT — phones call people, not accounts
+                from_type = from_id.split("_")[0] if "_" in from_id else ""
+                to_type = to_id.split("_")[0] if "_" in to_id else ""
+
+                if from_type == "PHONE" and to_type == "ACCOUNT" and rel_type == "CALLED":
+                    # Skip invalid: phone doesn't call account
+                    continue
+
+                relationships.append(Relationship(
+                    from_id=from_id,
+                    to_id=to_id,
+                    rel_type=rel_type,
+                    weight=1.0
+                ))
 
             return entities, relationships
 

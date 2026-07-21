@@ -144,41 +144,43 @@ with col_btn:
     )
 
 # ── SAMPLE DATA ───────────────────────────────────────────────────────────────
+SAMPLE_PHONES = "9876543210\n8765432109\n7654321098"
+SAMPLE_ACCOUNTS = "HDFC0000123456\nSBI99887766"
+SAMPLE_DEVICES = "IMEI:359847101234567"
+SAMPLE_STATEMENT = (
+    "I received a call from 9876543210 claiming to be from CBI. "
+    "They said my Aadhaar number was linked to a money laundering case. "
+    "A second person on 8765432109 posed as a Supreme Court judge. "
+    "They forced me to transfer 2,40,000 rupees to account HDFC0000123456 "
+    "and later 80,000 rupees to SBI99887766. The calls were made from a device "
+    "with IMEI 359847101234567. A third operator on 7654321098 coordinated "
+    "the entire operation from what sounded like a call centre."
+)
+
 with st.expander("Load Sample Data (Digital Arrest Ring)", expanded=False):
     if st.button("Load Sample", key="load_sample"):
-        st.session_state["sample_phones"] = "9876543210\n8765432109\n7654321098"
-        st.session_state["sample_accounts"] = "HDFC0000123456\nSBI99887766"
-        st.session_state["sample_devices"] = "IMEI:359847101234567"
-        st.session_state["sample_statement"] = (
-            "I received a call from 9876543210 claiming to be from CBI. "
-            "They said my Aadhaar number was linked to a money laundering case. "
-            "A second person on 8765432109 posed as a Supreme Court judge. "
-            "They forced me to transfer 2,40,000 rupees to account HDFC0000123456 "
-            "and later 80,000 rupees to SBI99887766. The calls were made from a device "
-            "with IMEI 359847101234567. A third operator on 7654321098 coordinated "
-            "the entire operation from what sounded like a call centre."
-        )
+        st.session_state["sample_data_loaded"] = True
+        st.session_state["sample_phones"] = SAMPLE_PHONES
+        st.session_state["sample_accounts"] = SAMPLE_ACCOUNTS
+        st.session_state["sample_devices"] = SAMPLE_DEVICES
+        st.session_state["sample_statement"] = SAMPLE_STATEMENT
         st.rerun()
-    # Auto-load sample if nothing selected
-    if "sample_phones" not in st.session_state:
-        st.session_state["sample_phones"] = "9876543210\n8765432109\n7654321098"
-        st.session_state["sample_accounts"] = "HDFC0000123456\nSBI99887766"
-        st.session_state["sample_devices"] = "IMEI:359847101234567"
-        st.session_state["sample_statement"] = (
-            "I received a call from 9876543210 claiming to be from CBI. "
-            "They said my Aadhaar number was linked to a money laundering case. "
-            "A second person on 8765432109 posed as a Supreme Court judge. "
-            "They forced me to transfer 2,40,000 rupees to account HDFC0000123456 "
-            "and later 80,000 rupees to SBI99887766. The calls were made from a device "
-            "with IMEI 359847101234567. A third operator on 7654321098 coordinated "
-            "the entire operation from what sounded like a call centre."
-        )
 
-# Apply sample data if loaded
+# Auto-load sample ONLY on first visit (never overwrite user input)
+if "sample_data_loaded" not in st.session_state:
+    st.session_state["sample_data_loaded"] = True
+    st.session_state["sample_phones"] = SAMPLE_PHONES
+    st.session_state["sample_accounts"] = SAMPLE_ACCOUNTS
+    st.session_state["sample_devices"] = SAMPLE_DEVICES
+    st.session_state["sample_statement"] = SAMPLE_STATEMENT
+
+# Apply sample data only once (pop removes key so it won't re-apply on rerun)
 if "sample_phones" in st.session_state:
     phones_input = st.session_state.pop("sample_phones", phones_input)
 if "sample_accounts" in st.session_state:
     accounts_input = st.session_state.pop("sample_accounts", accounts_input)
+if "sample_devices" in st.session_state:
+    devices_input = st.session_state.pop("sample_devices", devices_input)
 if "sample_statement" in st.session_state:
     victim_statement = st.session_state.pop("sample_statement", victim_statement)
 
