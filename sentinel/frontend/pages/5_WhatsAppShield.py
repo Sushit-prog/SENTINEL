@@ -158,12 +158,12 @@ sample_cols = st.columns(4)
 for i, (name, msg) in enumerate(SAMPLE_MESSAGES.items()):
     with sample_cols[i]:
         if st.button(name, use_container_width=True, key=f"sample_{i}"):
-            st.session_state["user_input"] = msg
+            st.session_state["chat_input"] = msg
 
 # Text input
 user_input = st.text_input(
     "Type or paste a suspicious message:",
-    value=st.session_state.get("user_input", ""),
+    value="",
     placeholder="Paste a suspicious WhatsApp message, SMS, or email here...",
     key="chat_input"
 )
