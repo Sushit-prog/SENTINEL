@@ -66,6 +66,8 @@ The real failure isn't lack of evidence after a crime — it's lack of intellige
                           └─────────────────────┘
 ```
 
+<img width="4086" height="6345" alt="image" src="https://github.com/user-attachments/assets/3c14961a-682d-4885-83cf-2d835aeeea77" />
+
 ---
 
 ## Modules
@@ -218,6 +220,8 @@ sentinel/
 
 **~50 files** across 6 frontend pages, 6 backend APIs, 3 agents, 9 module implementations, and 4 config files.
 
+---
+<img width="4488" height="8049" alt="image" src="https://github.com/user-attachments/assets/be024b5d-9e3c-4844-9326-d53046fedb77" />
 ---
 
 ## Quick Start
