@@ -9,6 +9,8 @@
 *"AI for Digital Public Safety: Defeating Counterfeiting, Fraud & Digital Arrest Scams"*
 
 ---
+<img width="1254" height="1254" alt="image" src="https://github.com/user-attachments/assets/4c3b00ce-5934-43c4-b987-fbb6509f3711" />
+---
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
